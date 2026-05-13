@@ -1,0 +1,13 @@
+name: 微信通知
+
+on:
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 推送微信
+        run: |
+          curl "https://sctapi.ftqq.com/SCT349379TZg9WwGTXFjFt7pWuZHnHdONQ.send?title=测试成功&desp=GitHub机器人正常运行"
