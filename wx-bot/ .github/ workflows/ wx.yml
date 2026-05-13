@@ -1,13 +1,41 @@
-name: 微信通知
+name: 股票提醒
 
 on:
+  schedule:
+    - cron: "0 1 * * *"   # 每天北京时间 10 点（UTC+8）
   workflow_dispatch:
 
 jobs:
-  send:
+  stock:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 推送微信
+      - name: 获取股票数据并推送微信
         run: |
-          curl "https://sctapi.ftqq.com/SCT349379TZg9WwGTXFjFt7pWuZHnHdONQ.send?title=测试成功&desp=GitHub机器人正常运行"
+          python3 - << 'EOF'
+          import requests
+
+          # ====== 配置区 ======
+          STOCK_CODE = "sh601778"“sz002108"  # 改成你的股票，比如晶科科技
+          KEY = "SCT349379TZg9WwGTXFjFt7pWuZHnHdONQ”
+
+          # ====== 获取行情（腾讯接口，简单稳定）======
+          url = f"http://qt.gtimg.cn/q={STOCK_CODE}"
+          res = requests.get(url).text
+
+          data = res.split("~")
+
+          name = data[1]
+          price = float(data[3])
+          open_price = float(data[5])
+          change = float(data[31])
+
+          msg = f"{name}\n现价：{price}\n涨跌幅：{change}%"
+
+          # ====== 微信推送 ======
+          push_url = f"https://sctapi.ftqq.com/{KEY}.send"
+          requests.post(push_url, data={
+              "title": f"{name} 股票提醒",
+              "desp": msg
+          })
+          EOF
